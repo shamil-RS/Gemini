@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">GeminiAI</string>
+
+    <string name="hello">Hello, Shamil!</string>
+    <string name="question">Where do we start?</string>
+
+    <string name="ask_gemini">Ask Gemini</string>
+    <string name="gemini">Gemini</string>
+    <string name="check_gemini_answers">Gemini can make mistakes. Check answers. Learn more</string>
+    <string name="google_search">Google Search</string>
+    <string name="gemini_version">2.5 Flash</string>
+
+    <string name="gemini_error">You stopped generating the response.</string>
+    <string name="image_error">Can\'t open image</string>
+    <string name="unknown_error">Unknown error</string>
+    <string name="clear_chat_message">Messages have been reset</string>
+</resources>
