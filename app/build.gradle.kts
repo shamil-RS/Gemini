@@ -119,7 +119,7 @@ dependencies {
     implementation(libs.room.ktx)
     androidTestImplementation(libs.room.testing)
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.splashscreen)
     implementation(libs.concurrent.kts)
@@ -139,4 +139,8 @@ dependencies {
 
     implementation(libs.generativeai)
     implementation(libs.datastore)
+
+    androidTestImplementation(libs.mockk)
+    androidTestImplementation(libs.core.testing)
+    androidTestImplementation(libs.hilt.android.testing)
 }

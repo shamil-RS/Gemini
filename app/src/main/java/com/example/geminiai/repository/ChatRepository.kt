@@ -19,7 +19,6 @@ import com.google.ai.client.generativeai.type.content
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -30,7 +29,7 @@ import javax.inject.Singleton
 class ChatRepository @Inject constructor(
     @ApplicationContext private val appContext: Context,
     @AppCoroutineScope private val coroutineScope: CoroutineScope,
-    private val messageDao: ChatDao,
+    private val chatDao: ChatDao,
     private val clipboardManager: ClipboardManager,
 ) {
 
@@ -94,7 +93,7 @@ class ChatRepository @Inject constructor(
         currentJob = null
     }
 
-    fun findMessages(): Flow<List<Message>> = messageDao.allByChatId()
+    fun findMessages(): Flow<List<Message>> = chatDao.allByChatId()
 
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     private suspend fun getMessageHistory(): List<Content> {
@@ -139,7 +138,7 @@ class ChatRepository @Inject constructor(
         mediaUri: String?,
         mediaMimeType: String?,
     ) {
-        messageDao.insert(
+        chatDao.insert(
             Message(
                 id = 0L,
                 senderId = senderId,
@@ -156,5 +155,5 @@ class ChatRepository @Inject constructor(
         clipboardManager.setPrimaryClip(clip)
     }
 
-    suspend fun clearAllChatMessage() = messageDao.clearAll()
+    suspend fun clearAllChatMessage() = chatDao.clearAll()
 }

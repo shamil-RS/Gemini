@@ -9,15 +9,19 @@ compose_bom = "2025.11.00"
 concurrent = "1.1.0"
 core = "1.17.0"
 core-splashscreen = "1.0.1"
+coreTesting = "2.2.0"
 espresso = "3.5.1"
 graphics = "1.0.0-alpha05"
 hilt = "2.57.2"
+hiltAndroidTesting = "2.57.2"
 hiltNavigationCompose = "1.3.0"
 junit = "4.13.2"
 kotlin = "2.2.0"
+kotlinxSerializationJson = "1.9.0"
 ksp = "2.2.0-2.0.2"
 lifecycle = "2.9.4"
 material3 = "1.4.0"
+mockk = "1.13.7"
 navigation = "2.8.0-alpha07"
 profileinstaller = "1.3.1"
 room = "2.8.3"
@@ -55,18 +59,22 @@ compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
 concurrent-kts = { group = "androidx.concurrent", name = "concurrent-futures-ktx", version.ref = "concurrent" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core" }
+core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espresso" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "test" }
 glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
 glance-material = { group = "androidx.glance", name = "glance-material3", version.ref = "glance" }
 graphics-shapes = { group = "androidx.graphics", name = "graphics-shapes", version.ref = "graphics" }
 hilt-android = { group = "com.google.dagger", name = "hilt-android", version.ref = "hilt" }
+hilt-android-testing = { module = "com.google.dagger:hilt-android-testing", version.ref = "hiltAndroidTesting" }
 hilt-compiler = { group = "com.google.dagger", name = "hilt-android-compiler", version.ref = "hilt" }
 hilt-navigation-compose = { group = "androidx.hilt", name = "hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinxSerializationJson" }
 lifecycle-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycle" }
 lifecycle-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle" }
 lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 navigation-compose = { group = "androidx.navigation", name = "navigation-compose", version.ref = "navigation" }
 profileinstaller = { group = "androidx.profileinstaller", name = "profileinstaller", version.ref = "profileinstaller" }
 room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
