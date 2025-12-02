@@ -42,3 +42,8 @@ GeminiAI is a cutting-edge Android application designed to seamlessly integrate 
    
 2. Open the project in Android Studio.
 3. Run the app on an emulator or a physical device.
+
+### Overview 
+
+https://github.com/user-attachments/assets/7f4dc357-878a-40ed-bf89-f8e9b98e8206
+
