@@ -1,5 +1,6 @@
 package com.example.geminiai.repository
 
+import android.R.attr.text
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -19,21 +20,20 @@ import com.google.ai.client.generativeai.type.content
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.coroutineContext
 
 @Singleton
 class ChatRepository @Inject constructor(
     @ApplicationContext private val appContext: Context,
-    @AppCoroutineScope private val coroutineScope: CoroutineScope,
     private val chatDao: ChatDao,
     private val clipboardManager: ClipboardManager,
 ) {
-
-    var currentJob: Job? = null
 
     @SuppressLint("StringFormatInvalid")
     suspend fun sendMessage(
@@ -55,47 +55,40 @@ class ChatRepository @Inject constructor(
             },
         )
 
-        coroutineScope.launch {
-            // Get the previous messages and them generative model chat
-            val pastMessages = getMessageHistory()
-            val chat = generativeModel.startChat(
-                history = pastMessages,
-            )
+        // Get the previous messages and them generative model chat
+        val pastMessages = getMessageHistory()
+        val chat = generativeModel.startChat(
+            history = pastMessages,
+        )
 
-            // Send a message prompt to the model to generate a response
-            val response = try {
-                if (mediaMimeType?.contains("image") == true) {
-                    appContext.contentResolver.openInputStream(
-                        Uri.parse(mediaUri),
-                    ).use {
-                        if (it != null) chat.sendMessage(BitmapFactory.decodeStream(it)).text?.trim()
-                            ?: "..."
-                        else appContext.getString(R.string.image_error)
-                    }
-                } else {
-                    chat.sendMessage(text).text?.trim() ?: "..."
+        // Send a message prompt to the model to generate a response
+        val response = try {
+            if (mediaMimeType?.contains("image") == true) {
+                appContext.contentResolver.openInputStream(
+                    Uri.parse(mediaUri),
+                ).use {
+                    if (it != null) chat.sendMessage(BitmapFactory.decodeStream(it)).text?.trim()
+                        ?: "..."
+                    else appContext.getString(R.string.image_error)
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
-                appContext.getString(
-                    R.string.gemini_error,
-                    e.message ?: appContext.getString(R.string.unknown_error),
-                )
+            } else {
+                chat.sendMessage(text).text?.trim() ?: "..."
             }
-
-            // Save the generated response to the database
-            saveMessage(response, 1, null, null)
+        } catch (e: Exception) {
+            coroutineContext.ensureActive()
+            e.printStackTrace()
+            appContext.getString(
+                R.string.gemini_error,
+                e.message ?: appContext.getString(R.string.unknown_error),
+            )
         }
-    }
 
-    fun cancelCurrentJob() {
-        currentJob?.cancel()
-        currentJob = null
+        // Save the generated response to the database
+        saveMessage(response, 1, null, null)
     }
 
     fun findMessages(): Flow<List<Message>> = chatDao.allByChatId()
 
-    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     private suspend fun getMessageHistory(): List<Content> {
         val pastMessages = findMessages().first().filter { message ->
             message.text.isNotEmpty()
@@ -105,7 +98,7 @@ class ChatRepository @Inject constructor(
             if (acc.isEmpty()) acc.add(message)
             else {
                 if (acc.last().isIncoming == message.isIncoming) {
-                    val lastMessage = acc.removeLast()
+                    val lastMessage = acc.removeAt(acc.size - 1)
                     val combinedMessage = Message(
                         id = lastMessage.id,
                         // User
@@ -123,11 +116,9 @@ class ChatRepository @Inject constructor(
             return@fold acc
         }
 
-        val lastUserMessage = pastMessages.removeLast()
-
-        val pastContents = pastMessages.mapNotNull { message: Message ->
+        val pastContents = pastMessages.map { message: Message ->
             val role = if (message.isIncoming) "model" else "user"
-            return@mapNotNull content(role = role) { text(message.text) }
+            content(role = role) { text(message.text) }
         }
         return pastContents
     }
