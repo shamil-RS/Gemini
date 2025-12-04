@@ -32,9 +32,6 @@ class ChatRepository @Inject constructor(
     private val chatDao: ChatDao,
     private val clipboardManager: ClipboardManager,
 ) {
-
-    var currentJob: Job? = null
-
     @SuppressLint("StringFormatInvalid")
     suspend fun sendMessage(
         text: String,
@@ -86,11 +83,6 @@ class ChatRepository @Inject constructor(
             // Save the generated response to the database
             saveMessage(response, 1, null, null)
         }
-    }
-
-    fun cancelCurrentJob() {
-        currentJob?.cancel()
-        currentJob = null
     }
 
     fun findMessages(): Flow<List<Message>> = chatDao.allByChatId()

@@ -140,7 +140,7 @@ class ChatViewModel @Inject constructor(
         _isCanceledMessage.value = true
         _input.value = ""
         sendJob?.cancel()
-        repository.cancelCurrentJob()
+        sendJob = null
     }
 
     fun clearMessages() {
