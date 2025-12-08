@@ -10,7 +10,7 @@
     <string name="google_search">Google Search</string>
     <string name="gemini_version">2.5 Flash</string>
 
-    <string name="gemini_error">You stopped generating the response.</string>
+    <string name="gemini_error">You stopped generating the response. Error %1$s</string>
     <string name="image_error">Can\'t open image</string>
     <string name="unknown_error">Unknown error</string>
     <string name="clear_chat_message">Messages have been reset</string>

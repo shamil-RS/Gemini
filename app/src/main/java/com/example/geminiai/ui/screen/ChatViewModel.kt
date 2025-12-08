@@ -7,22 +7,22 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.geminiai.R
+import com.example.geminiai.model.Message
 import com.example.geminiai.repository.ChatRepository
 import com.example.geminiai.ui.stateInUi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.coroutines.cancellation.CancellationException
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
@@ -30,25 +30,12 @@ class ChatViewModel @Inject constructor(
     private val application: Context,
     private val repository: ChatRepository,
 ) : ViewModel() {
-    private val chatMessage = MutableStateFlow(0L)
-    private val _messages = chatMessage.flatMapLatest { repository.findMessages() }
-    val messages = _messages.map { messages ->
-        buildList {
-            for (i in messages.indices.reversed()) {
-                val message = messages[i]
-                add(
-                    ChatMessage(
-                        id = message.id,
-                        text = message.text,
-                        mediaUri = message.mediaUri,
-                        mediaMimeType = message.mediaMimeType,
-                        timestamp = message.timestamp,
-                        isIncoming = message.isIncoming,
-                    ),
-                )
-            }
-        }
-    }.stateInUi(emptyList())
+    private val chatMessagesCount = MutableStateFlow(0L)
+
+    val messages = chatMessagesCount
+        .flatMapLatest { repository.findMessages() }
+        .map { it.reversed().map { it.toChatMessage() } }
+        .stateInUi(emptyList())
 
     private val _input = MutableStateFlow("")
     val input: StateFlow<String> = _input
@@ -70,19 +57,12 @@ class ChatViewModel @Inject constructor(
         val input = _input.value
         if (!isInputValid(input)) return
         sendJob = viewModelScope.launch {
-            _isSendMessageState.value = _isSendMessageState.value.copy(isStateMessage = true)
+            _isSendMessageState.update { it.copy(isStateMessage = true) }
             try {
-                ensureActive()
-
                 repository.sendMessage(input, null, null)
                 _input.value = ""
-                val currentSize = messages.value.size
-                messages.first { it.size > currentSize + 1 }
-                _isSendMessageState.value = _isSendMessageState.value.copy(isStateMessage = false)
-            } catch (e: CancellationException) {
-                throw e
             } finally {
-                _isSendMessageState.value = _isSendMessageState.value.copy(isStateMessage = false)
+                _isSendMessageState.update { it.copy(isStateMessage = false) }
             }
         }
     }
@@ -91,17 +71,11 @@ class ChatViewModel @Inject constructor(
         sendJob = viewModelScope.launch {
             _isSendMessageState.value = _isSendMessageState.value.copy(isStateMessage = true)
             try {
-                ensureActive()
-
-                val currentSize = messages.value.size
                 repository.sendMessage(messages.value.dropLast(1).last().text, null, null)
-                messages.first { it.size > currentSize + 1 }
-                _isSendMessageState.value = _isSendMessageState.value.copy(isStateMessage = false)
+                _isSendMessageState.update { it.copy(isStateMessage = false) }
                 _input.value = ""
-            } catch (e: CancellationException) {
-                throw e
             } finally {
-                _isSendMessageState.value = _isSendMessageState.value.copy(isStateMessage = false)
+                _isSendMessageState.update { it.copy(isStateMessage = false) }
             }
         }
     }
@@ -114,8 +88,6 @@ class ChatViewModel @Inject constructor(
         sendJob = viewModelScope.launch {
             _isSendMessageState.value = _isSendMessageState.value.copy(isStateMessage = true)
             try {
-                ensureActive()
-
                 val currentSize = messages.value.size
 
                 val updateList = _messageBlock.value.messageList.map { message ->
@@ -128,8 +100,6 @@ class ChatViewModel @Inject constructor(
                 }
 
                 _messageBlock.value = _messageBlock.value.copy(messageList = updateList)
-            } catch (e: CancellationException) {
-                throw e
             } finally {
                 _isSendMessageState.value = _isSendMessageState.value.copy(isStateMessage = false)
             }
@@ -158,6 +128,15 @@ class ChatViewModel @Inject constructor(
 
     private fun isInputValid(input: String): Boolean = input.isNotBlank()
 }
+
+fun Message.toChatMessage(): ChatMessage = ChatMessage(
+    id = id,
+    text = text,
+    mediaUri = mediaUri,
+    mediaMimeType = mediaMimeType,
+    timestamp = timestamp,
+    isIncoming = isIncoming,
+)
 
 data class ChatMessage(
     val id: Long = 0,
