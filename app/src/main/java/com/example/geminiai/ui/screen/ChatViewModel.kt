@@ -89,7 +89,6 @@ class ChatViewModel @Inject constructor(
             _isSendMessageState.value = _isSendMessageState.value.copy(isStateMessage = true)
             try {
                 val currentSize = messages.value.size
-
                 val updateList = _messageBlock.value.messageList.map { message ->
                     if (message.id == messageBlock.id) {
                         val updateMessage = message.copy(isSelectedBlock = true)
@@ -98,7 +97,6 @@ class ChatViewModel @Inject constructor(
                         updateMessage
                     } else message
                 }
-
                 _messageBlock.value = _messageBlock.value.copy(messageList = updateList)
             } finally {
                 _isSendMessageState.value = _isSendMessageState.value.copy(isStateMessage = false)
@@ -110,7 +108,6 @@ class ChatViewModel @Inject constructor(
         _isCanceledMessage.value = true
         _input.value = ""
         sendJob?.cancel()
-        sendJob = null
     }
 
     fun clearMessages() {
@@ -147,6 +144,15 @@ data class ChatMessage(
     val isIncoming: Boolean = false,
     val isTyping: Boolean = false,
     val isStateMessage: Boolean = false,
+)
+
+fun Message.toChatMessage(): ChatMessage = ChatMessage(
+    id = id,
+    text = text,
+    mediaUri = mediaUri,
+    mediaMimeType = mediaMimeType,
+    timestamp = timestamp,
+    isIncoming = isIncoming,
 )
 
 data class BlockMessageState(

@@ -1,5 +1,6 @@
 package com.example.geminiai.repository
 
+import android.R.attr.text
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
@@ -14,12 +15,14 @@ import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.Content
 import com.google.ai.client.generativeai.type.content
 import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
+import kotlin.coroutines.coroutineContext
 
 @Singleton
 class ChatRepository @Inject constructor(
@@ -27,6 +30,7 @@ class ChatRepository @Inject constructor(
     private val chatDao: ChatDao,
     private val clipboardManager: ClipboardManager,
 ) {
+
     @SuppressLint("StringFormatInvalid")
     suspend fun sendMessage(
         text: String,
@@ -53,6 +57,7 @@ class ChatRepository @Inject constructor(
             history = pastMessages,
         )
 
+        // Send a message prompt to the model to generate a response
         val response = try {
             if (mediaMimeType?.contains("image") == true) {
                 appContext.contentResolver.openInputStream(
@@ -66,7 +71,7 @@ class ChatRepository @Inject constructor(
                 chat.sendMessage(text).text?.trim() ?: "..."
             }
         } catch (e: Exception) {
-            currentCoroutineContext().ensureActive()
+            coroutineContext.ensureActive()
             e.printStackTrace()
             appContext.getString(
                 R.string.gemini_error,
