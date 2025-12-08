@@ -7,12 +7,9 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.os.Build
-import androidx.annotation.RequiresApi
 import com.example.geminiai.BuildConfig
 import com.example.geminiai.R
 import com.example.geminiai.data.room.dao.ChatDao
-import com.example.geminiai.di.AppCoroutineScope
 import com.example.geminiai.model.Message
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.Content
@@ -23,7 +20,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.coroutines.coroutineContext

@@ -23,7 +23,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-import kotlin.coroutines.cancellation.CancellationException
 
 @HiltViewModel
 class ChatViewModel @Inject constructor(
@@ -126,6 +125,15 @@ class ChatViewModel @Inject constructor(
 
     private fun isInputValid(input: String): Boolean = input.isNotBlank()
 }
+
+fun Message.toChatMessage(): ChatMessage = ChatMessage(
+    id = id,
+    text = text,
+    mediaUri = mediaUri,
+    mediaMimeType = mediaMimeType,
+    timestamp = timestamp,
+    isIncoming = isIncoming,
+)
 
 data class ChatMessage(
     val id: Long = 0,
