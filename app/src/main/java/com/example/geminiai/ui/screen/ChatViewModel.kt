@@ -126,15 +126,6 @@ class ChatViewModel @Inject constructor(
     private fun isInputValid(input: String): Boolean = input.isNotBlank()
 }
 
-fun Message.toChatMessage(): ChatMessage = ChatMessage(
-    id = id,
-    text = text,
-    mediaUri = mediaUri,
-    mediaMimeType = mediaMimeType,
-    timestamp = timestamp,
-    isIncoming = isIncoming,
-)
-
 data class ChatMessage(
     val id: Long = 0,
     val text: String = "",
