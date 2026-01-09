@@ -16,7 +16,7 @@ import com.example.geminiai.ui.util.bitmap.BitmapConverters
         ChatEntity::class,
         MessageEntity::class,
     ],
-    version = 2
+    version = 1
 )
 @TypeConverters(BitmapConverters::class)
 abstract class AppDatabase : RoomDatabase() {
