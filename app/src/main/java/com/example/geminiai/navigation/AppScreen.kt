@@ -5,7 +5,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 
 @Composable
 fun AppScreen() {
-    val navBackStack = rememberNavBackStack(ChatScreen)
+    val navBackStack = rememberNavBackStack(ChatScreen(0))
 
     NavStack(navBackStack = navBackStack)
 }

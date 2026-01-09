@@ -2,26 +2,29 @@ package com.example.geminiai.data.room.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.geminiai.model.Message
+import androidx.room.Update
+import com.example.geminiai.data.room.entity.ChatEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ChatDao {
 
     @Insert
-    suspend fun insert(message: Message): Long
+    suspend fun insert(chat: ChatEntity): Long
 
-    @Query("SELECT * FROM Message ORDER BY timestamp DESC")
-    fun allByChatId(): Flow<List<Message>>
+    @Query("SELECT * FROM chats ORDER BY created_at DESC")
+    fun allDetails(): Flow<List<ChatEntity>>
 
-    /**
-     * Obtains a list of all messages in the chat. Newer messages come first.
-     */
-    @Query("SELECT * FROM Message ORDER BY timestamp DESC")
-    suspend fun loadAll(): List<Message>
+    @Query("SELECT * FROM chats WHERE chat_id = :id")
+    suspend fun loadDetailById(id: Long): ChatEntity
 
-    @Query("DELETE FROM Message")
-    suspend fun clearAll()
+    @Query("SELECT * FROM chats WHERE chat_id = :id")
+    fun detailById(id: Long): Flow<ChatEntity?>
+
+    @Query("SELECT * FROM chats")
+    suspend fun loadAllDetails(): List<ChatEntity>
+
+    @Update
+    suspend fun editChat(chat: ChatEntity)
 }

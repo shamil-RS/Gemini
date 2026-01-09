@@ -2,13 +2,41 @@
     <string name="app_name">GeminiAI</string>
 
     <string name="hello">Hello, Shamil!</string>
-    <string name="question">Where do we start?</string>
+    <string name="start_question">Where do we start?</string>
 
     <string name="ask_gemini">Ask Gemini</string>
     <string name="gemini">Gemini</string>
     <string name="check_gemini_answers">Gemini can make mistakes. Check answers. Learn more</string>
     <string name="google_search">Google Search</string>
-    <string name="gemini_version">2.5 Flash</string>
+    <string name="gemini_version">gemini-3</string>
+
+    <string name="chats">Chats</string>
+    <string name="new_chat">New Chat</string>
+    <string name="chat_title">Chat Title</string>
+    <string name="untitled_chat">Untitled Chat</string>
+    <string name="rename_the_chat">Rename the chat</string>
+    <string name="share_a_chat">Share a chat</string>
+    <string name="clear_the_chat">Clear the chat</string>
+    <string name="chat_title_dialog_description">AI generated title is only available with AICore supported devices.</string>
+    <string name="title_length_limit">Title length limit: %1$s/50</string>
+    <string name="default_mode">Default</string>
+    <string name="ai_generated">AI Generated (Beta)</string>
+    <string name="confirm">Confirm</string>
+    <string name="cancel">Cancel</string>
+    <string name="edit">Edit</string>
+    <string name="update">Update</string>
+    <string name="update_chat_title">Update chat title</string>
+    <string name="retry_ai_title">Retry AI generated title</string>
+    <string name="apply_generated_title">Apply generated title</string>
+
+    <string name="open_the_camera">Open the camera</string>
+    <string name="open_a_gallery">Open a gallery</string>
+    <string name="attach_file">File</string>
+    <string name="disk">Disk</string>
+
+    <string name="my_content">My content</string>
+    <string name="gem_bots">Gem-bots</string>
+    <string name="storybook">Storybook</string>
 
     <string name="gemini_error">You stopped generating the response. Error: %1$s</string>
     <string name="image_error">Can\'t open image</string>

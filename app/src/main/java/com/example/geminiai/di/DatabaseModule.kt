@@ -5,15 +5,12 @@ import android.content.Context
 import androidx.room.Room
 import com.example.geminiai.data.room.AppDatabase
 import com.example.geminiai.data.room.dao.ChatDao
+import com.example.geminiai.data.room.dao.MessageDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.asCoroutineDispatcher
-import java.util.concurrent.Executors
-import javax.inject.Qualifier
 import javax.inject.Singleton
 
 @Module
@@ -31,7 +28,10 @@ object DatabaseModule {
             .build()
 
     @Provides
-    fun providesMessageDao(database: AppDatabase): ChatDao = database.chatDao()
+    fun providesChatDao(database: AppDatabase): ChatDao = database.chatDao()
+
+    @Provides
+    fun providesMessageDao(database: AppDatabase): MessageDao = database.messageDao()
 
     @Provides
     fun provideClipboardManager(@ApplicationContext context: Context): ClipboardManager {

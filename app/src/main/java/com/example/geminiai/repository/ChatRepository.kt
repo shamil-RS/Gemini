@@ -4,86 +4,109 @@ import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.graphics.BitmapFactory
-import android.net.Uri
+import android.graphics.Bitmap
 import com.example.geminiai.BuildConfig
 import com.example.geminiai.R
+import com.example.geminiai.data.mapper.asDomain
+import com.example.geminiai.data.mapper.asEntity
 import com.example.geminiai.data.room.dao.ChatDao
+import com.example.geminiai.data.room.dao.MessageDao
+import com.example.geminiai.model.Chat
 import com.example.geminiai.model.Message
 import com.google.ai.client.generativeai.GenerativeModel
 import com.google.ai.client.generativeai.type.Content
+import com.google.ai.client.generativeai.type.asImageOrNull
 import com.google.ai.client.generativeai.type.content
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
-import kotlin.coroutines.coroutineContext
 
 @Singleton
 class ChatRepository @Inject constructor(
     @ApplicationContext private val appContext: Context,
     private val chatDao: ChatDao,
+    private val messageDao: MessageDao,
     private val clipboardManager: ClipboardManager,
 ) {
-
     @SuppressLint("StringFormatInvalid")
     suspend fun sendMessage(
+        chatId: Long,
         text: String,
-        mediaUri: String?,
-        mediaMimeType: String?,
+        image: Bitmap? = null,
     ) {
-        // Save the message to the database
-        saveMessage(text, senderId = 0L, mediaUri, mediaMimeType)
+        try {
+            // Save the message to the database
+            saveMessage(chatId, text, image, senderId = 0L)
 
-        // Create a generative AI Model to interact with the Gemini API.
-        val generativeModel = GenerativeModel(
-            modelName = "gemini-2.5-flash",
-            // Set your Gemini API in as an `API_KEY` variable in your local.properties file
-            apiKey = BuildConfig.API_KEY,
-            // Set a system instruction to set the behavior of the model.
-            systemInstruction = content {
-                text("Please respond to this chat.")
-            },
-        )
+            // Create a generative AI Model to interact with the Gemini API.
+            val generativeModel = GenerativeModel(
+                modelName = "gemini-3-flash-preview",
+                // Set your Gemini API in as an `API_KEY` variable in your local.properties file
+                apiKey = BuildConfig.API_KEY,
+                // Set a system instruction to set the behavior of the model.
+                systemInstruction = content {
+                    text("Please respond to this chat.")
+                },
+            )
 
-        // Get the previous messages and them generative model chat
-        val pastMessages = getMessageHistory()
-        val chat = generativeModel.startChat(
-            history = pastMessages,
-        )
+            // Get the previous messages and them generative model chat
+            val pastMessages = getMessageHistory(chatId)
+            val chat = generativeModel.startChat(history = pastMessages)
 
-        // Send a message prompt to the model to generate a response
-        val response = try {
-            if (mediaMimeType?.contains("image") == true) {
-                appContext.contentResolver.openInputStream(
-                    Uri.parse(mediaUri),
-                ).use {
-                    if (it != null) chat.sendMessage(BitmapFactory.decodeStream(it)).text?.trim()
-                        ?: "..."
-                    else appContext.getString(R.string.image_error)
+            val content = content {
+                text(text)
+                if (image != null) {
+                    image(image)
                 }
+            }
+
+            val response = chat.sendMessage(content)
+
+            val responseText = response.text?.trim() ?: "..."
+            val responseImage =
+                response.candidates.firstOrNull()?.content?.parts?.firstNotNullOfOrNull { it.asImageOrNull() }
+
+            if (responseText.isBlank() && responseImage == null) {
+                error("Model returned an empty response")
             } else {
-                chat.sendMessage(text).text?.trim() ?: "..."
+                saveMessage(chatId, responseText, responseImage, 1)
             }
         } catch (e: Exception) {
-            coroutineContext.ensureActive()
+            currentCoroutineContext().ensureActive()
             e.printStackTrace()
-            appContext.getString(
+            val errorMessage = appContext.getString(
                 R.string.gemini_error,
                 e.message ?: appContext.getString(R.string.unknown_error),
             )
+            saveMessage(chatId, errorMessage, null, 1)
         }
-
-        // Save the generated response to the database
-        saveMessage(response, 1, null, null)
     }
 
-    fun findMessages(): Flow<List<Message>> = chatDao.allByChatId()
+    fun findMessages(chatId: Long): Flow<List<Message>> =
+        messageDao.allByChatId(chatId)
+            .map { entities ->
+                entities.map { entity ->
+                    entity.asDomain()
+                }
+            }
 
-    private suspend fun getMessageHistory(): List<Content> {
-        val pastMessages = findMessages().first().filter { message ->
+    fun allDetails(): Flow<List<Chat>> =
+        chatDao.allDetails()
+            .map { entities ->
+                entities.map { entity ->
+                    entity.asDomain()
+                }
+            }
+
+    suspend fun createNewChat(): Long = chatDao.insert(Chat(0L, "").asEntity())
+
+    private suspend fun getMessageHistory(chatId: Long): List<Content> {
+        val pastMessages = findMessages(chatId).first().filter { message ->
             message.text.isNotEmpty()
         }.sortedBy { message ->
             message.timestamp
@@ -97,8 +120,6 @@ class ChatRepository @Inject constructor(
                         // User
                         senderId = lastMessage.senderId,
                         text = lastMessage.text + " " + message.text,
-                        mediaUri = null,
-                        mediaMimeType = null,
                         timestamp = System.currentTimeMillis(),
                     )
                     acc.add(combinedMessage)
@@ -113,25 +134,30 @@ class ChatRepository @Inject constructor(
             val role = if (message.isIncoming) "model" else "user"
             content(role = role) { text(message.text) }
         }
+
         return pastContents
     }
 
     private suspend fun saveMessage(
+        chatId: Long,
         text: String,
+        image: Bitmap? = null,
         senderId: Long,
-        mediaUri: String?,
-        mediaMimeType: String?,
     ) {
-        chatDao.insert(
+        messageDao.insert(
             Message(
                 id = 0L,
+                chatId = chatId,
                 senderId = senderId,
                 text = text,
-                mediaUri = mediaUri,
-                mediaMimeType = mediaMimeType,
+                image = image,
                 timestamp = System.currentTimeMillis(),
-            ),
+            ).asEntity()
         )
+    }
+
+    suspend fun updateChatTitle(chat: Chat, title: String) {
+        chatDao.editChat(chat.asEntity().copy(title = title.replace('\n', ' ').take(50)))
     }
 
     fun copyToClipboard(text: String) {
@@ -139,5 +165,7 @@ class ChatRepository @Inject constructor(
         clipboardManager.setPrimaryClip(clip)
     }
 
-    suspend fun clearAllChatMessage() = chatDao.clearAll()
+    suspend fun clearChatMessage(chatId: Long) {
+        messageDao.clearAll(chatId)
+    }
 }

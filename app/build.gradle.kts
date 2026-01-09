@@ -17,6 +17,7 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.secrets)
     id("kotlinx-serialization")
+    id("kotlin-parcelize")
 }
 
 kotlin {
@@ -134,9 +135,7 @@ dependencies {
 
     implementation(libs.activity)
 
-    implementation(libs.coil)
-    implementation(libs.coil.compose)
-
+    implementation(libs.coil.compose.android)
     implementation(libs.generativeai)
     implementation(libs.datastore)
 
