@@ -45,5 +45,4 @@ GeminiAI is a cutting-edge Android application designed to seamlessly integrate 
 
 ### Overview 
 
-https://github.com/user-attachments/assets/7f4dc357-878a-40ed-bf89-f8e9b98e8206
-
+https://github.com/user-attachments/assets/8cd316a4-7599-456c-b17e-c7f780503d1d
